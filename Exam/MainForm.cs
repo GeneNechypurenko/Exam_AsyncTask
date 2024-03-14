@@ -6,7 +6,8 @@ namespace Exam
     {
         private AppConfig appConfig;
         private ForbiddenWordsSearcher forbiddenWordsSearcher;
-
+        private CancellationTokenSource cancellationTokenSource;
+        private bool isPaused = false;
         public MainForm()
         {
             InitializeComponent();
@@ -17,54 +18,98 @@ namespace Exam
             appConfig.DataFolder.DataFoldersEnsureCreated();
             forbiddenWordsSearcher = new ForbiddenWordsSearcher(appConfig);
             FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
+            EnableControls();
+        }
+        private void EnableControls()
+        {
+            startButton.Enabled = true;
+            pauseButton.Enabled = false;
+            cancelButton.Enabled = false;
+        }
+        private void DisableControls()
+        {
+            startButton.Enabled = false;
+            pauseButton.Enabled = true;
+            cancelButton.Enabled = true;
         }
         private async void browseButton_Click(object sender, EventArgs e)
         {
             await Task.Run(() => { appConfig.DataFolder.OpenDataFolder(); });
         }
-
         private async void startButton_Click(object sender, EventArgs e)
         {
+            DisableControls();
+
+            cancellationTokenSource = new CancellationTokenSource();
+
             statusProgressBar.Value = 0;
             statusLabel.Text = "0%";
             currentPathLabel.Text = "Searching...";
 
-            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder);
-
-            int totalFiles = foundFiles.Count;
-            int filesProcessed = 0;
-
-            foreach (string sourceFilePath in foundFiles)
+            try
             {
-                currentPathLabel.Text = $"Current Path: {sourceFilePath}";
+                List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder, cancellationTokenSource.Token);
 
-                int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
-                statusProgressBar.Value = progressPercentage;
-                statusLabel.Text = $"{progressPercentage}%";
+                int totalFiles = foundFiles.Count;
+                int filesProcessed = 0;
 
-                await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords);
+                foreach (string sourceFilePath in foundFiles)
+                {
+                    if (await PauseButtonPressed())
 
-                filesProcessed++;
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+                    currentPathLabel.Text = $"Current Path: {sourceFilePath}";
+
+                    int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
+                    statusProgressBar.Value = progressPercentage;
+                    statusLabel.Text = $"{progressPercentage}%";
+
+                    await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords, cancellationTokenSource.Token);
+
+                    filesProcessed++;
+                }
+
+                statusProgressBar.Value = 100;
+                statusLabel.Text = "100%";
+                currentPathLabel.Text = "Search Completed!";
             }
-            statusProgressBar.Value = 100;
-            statusLabel.Text = "100%";
-            currentPathLabel.Text = "Search Completed!";
-        }
-
-        private async void pauseButton_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() =>
+            catch (OperationCanceledException)
             {
-                // Ваш код для кнопки "Pause"
-            });
-        }
-
-        private async void cancelButton_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() =>
+                statusProgressBar.Value = 0;
+                statusLabel.Text = "Cancelled";
+                currentPathLabel.Text = "Search Cancelled!";
+            }
+            finally
             {
-                // Ваш код для кнопки "Cancel"
-            });
+                EnableControls();
+            }
+        }
+        private async Task<bool> PauseButtonPressed()
+        {
+            while (isPaused)
+            {
+                await Task.Delay(50);
+            }
+            return isPaused;
+        }
+        private void pauseButton_Click(object sender, EventArgs e)
+        {
+            if (pauseButton.Text == "PAUSE")
+            {
+                pauseButton.Text = "RESUME";
+                isPaused = true;
+            }
+            else if (pauseButton.Text == "RESUME")
+            {
+                pauseButton.Text = "PAUSE";
+                isPaused = false;
+            }
+        }
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            cancellationTokenSource.Cancel();
+            EnableControls();
         }
         private async void inputTextBox_KeyDown(object sender, KeyEventArgs e)
         {

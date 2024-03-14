@@ -26,7 +26,7 @@
         {
             string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
             await File.AppendAllTextAsync(filePath, enteredWord + "\n");
-            LoadForbiddenWords(); // Обновить список запрещенных слов после добавления нового слова
+            LoadForbiddenWords();
         }
 
         public async Task RemoveSelectedWordsAsync(ListBox listBox)
@@ -48,19 +48,20 @@
             }
 
             await File.WriteAllLinesAsync(filePath, updatedLines);
-            LoadForbiddenWords(); // Обновить список запрещенных слов после удаления слов
+            LoadForbiddenWords();
         }
-        public async Task CopyAndRenameFoundFilesAsync(List<string> forbiddenWords)
+        public async Task CopyAndRenameFoundFilesAsync(List<string> forbiddenWords, CancellationToken cancellationToken)
         {
-            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder);
+            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder, cancellationToken);
             foreach (string sourceFilePath in foundFiles)
             {
-                string originalFileName = Path.GetFileName(sourceFilePath);
+                cancellationToken.ThrowIfCancellationRequested();
 
+                string originalFileName = Path.GetFileName(sourceFilePath);
                 string originalDestinationFilePath = Path.Combine(appConfig.DataFolder.CopiedFiles, originalFileName);
 
                 Thread.Sleep(200);
-                await Task.Run(() => File.Copy(sourceFilePath, originalDestinationFilePath, true));
+                await Task.Run(() => File.Copy(sourceFilePath, originalDestinationFilePath, true), cancellationToken);
 
                 string renamedFileName = originalFileName;
                 foreach (string word in forbiddenWords)
@@ -72,9 +73,8 @@
                 }
                 string renamedDestinationFilePath = Path.Combine(appConfig.DataFolder.CopiedFiles, renamedFileName);
 
-                await Task.Run(() => File.Copy(sourceFilePath, renamedDestinationFilePath, true));
+                await Task.Run(() => File.Copy(sourceFilePath, renamedDestinationFilePath, true), cancellationToken);
             }
         }
-
     }
 }

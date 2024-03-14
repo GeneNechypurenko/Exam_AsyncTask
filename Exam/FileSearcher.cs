@@ -1,6 +1,6 @@
 ﻿public static class FileSearcher
 {
-    public static async Task<List<string>> SearchFilesByForbiddenWords(DataFolderPaths dataFolderPaths)
+    public static async Task<List<string>> SearchFilesByForbiddenWords(DataFolderPaths dataFolderPaths, CancellationToken cancellationToken)
     {
         List<string> foundFiles = new List<string>();
 
@@ -18,6 +18,8 @@
 
             foreach (string forbiddenWord in forbiddenWords)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string[] files = Directory.GetFiles(driveRoot, $"*{forbiddenWord.Trim()}*.*", SearchOption.AllDirectories);
                 foundFiles.AddRange(files);
             }
