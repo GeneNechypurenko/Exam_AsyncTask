@@ -28,50 +28,75 @@
         /// </summary>
         private void InitializeComponent()
         {
-            controlsGroupBox = new GroupBox();
+            searchWordsGroupBox = new GroupBox();
             inputTextBox = new TextBox();
+            label1 = new Label();
+            searchWordsListBox = new ListBox();
             browseButton = new Button();
             statusLabel = new Label();
-            searchWordsListBox = new ListBox();
             startButton = new Button();
             pauseButton = new Button();
             cancelButton = new Button();
             statusProgressBar = new ProgressBar();
             reportListBox = new ListBox();
             currentPathLabel = new Label();
-            controlsGroupBox.SuspendLayout();
+            controlPanelGroupBox = new GroupBox();
+            searchStatusGroupBox = new GroupBox();
+            reportGroupBox = new GroupBox();
+            searchWordsGroupBox.SuspendLayout();
+            controlPanelGroupBox.SuspendLayout();
+            searchStatusGroupBox.SuspendLayout();
+            reportGroupBox.SuspendLayout();
             SuspendLayout();
             // 
-            // controlsGroupBox
+            // searchWordsGroupBox
             // 
-            controlsGroupBox.Controls.Add(inputTextBox);
-            controlsGroupBox.Controls.Add(browseButton);
-            controlsGroupBox.Controls.Add(statusLabel);
-            controlsGroupBox.Controls.Add(searchWordsListBox);
-            controlsGroupBox.Controls.Add(startButton);
-            controlsGroupBox.Controls.Add(pauseButton);
-            controlsGroupBox.Controls.Add(cancelButton);
-            controlsGroupBox.Controls.Add(statusProgressBar);
-            controlsGroupBox.Dock = DockStyle.Right;
-            controlsGroupBox.Location = new Point(550, 0);
-            controlsGroupBox.Name = "controlsGroupBox";
-            controlsGroupBox.Size = new Size(250, 450);
-            controlsGroupBox.TabIndex = 0;
-            controlsGroupBox.TabStop = false;
+            searchWordsGroupBox.Controls.Add(inputTextBox);
+            searchWordsGroupBox.Controls.Add(label1);
+            searchWordsGroupBox.Controls.Add(searchWordsListBox);
+            searchWordsGroupBox.Location = new Point(550, 0);
+            searchWordsGroupBox.Name = "searchWordsGroupBox";
+            searchWordsGroupBox.Size = new Size(250, 303);
+            searchWordsGroupBox.TabIndex = 0;
+            searchWordsGroupBox.TabStop = false;
+            searchWordsGroupBox.Text = "FORBIDDEN WORDS LIST";
             // 
             // inputTextBox
             // 
-            inputTextBox.Dock = DockStyle.Bottom;
-            inputTextBox.Location = new Point(3, 51);
+            inputTextBox.BackColor = Color.Ivory;
+            inputTextBox.Dock = DockStyle.Top;
+            inputTextBox.Location = new Point(3, 267);
             inputTextBox.Name = "inputTextBox";
             inputTextBox.Size = new Size(244, 27);
             inputTextBox.TabIndex = 8;
+            inputTextBox.TextChanged += inputTextBox_TextChanged;
             inputTextBox.KeyDown += inputTextBox_KeyDown;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Dock = DockStyle.Top;
+            label1.Location = new Point(3, 247);
+            label1.Name = "label1";
+            label1.Size = new Size(132, 20);
+            label1.TabIndex = 7;
+            label1.Text = "ADD NEW WORD";
+            // 
+            // searchWordsListBox
+            // 
+            searchWordsListBox.BackColor = Color.Ivory;
+            searchWordsListBox.Dock = DockStyle.Top;
+            searchWordsListBox.FormattingEnabled = true;
+            searchWordsListBox.Location = new Point(3, 23);
+            searchWordsListBox.Name = "searchWordsListBox";
+            searchWordsListBox.Size = new Size(244, 224);
+            searchWordsListBox.TabIndex = 6;
+            searchWordsListBox.KeyDown += searchWordsListBox_KeyDown;
             // 
             // browseButton
             // 
-            browseButton.Dock = DockStyle.Bottom;
-            browseButton.Location = new Point(3, 78);
+            browseButton.Dock = DockStyle.Top;
+            browseButton.Location = new Point(3, 110);
             browseButton.Name = "browseButton";
             browseButton.Size = new Size(244, 29);
             browseButton.TabIndex = 7;
@@ -82,27 +107,16 @@
             // statusLabel
             // 
             statusLabel.AutoSize = true;
-            statusLabel.Dock = DockStyle.Top;
-            statusLabel.Location = new Point(3, 23);
+            statusLabel.Location = new Point(502, 23);
             statusLabel.Name = "statusLabel";
-            statusLabel.Size = new Size(107, 20);
+            statusLabel.Size = new Size(31, 20);
             statusLabel.TabIndex = 5;
-            statusLabel.Text = "current status";
-            // 
-            // searchWordsListBox
-            // 
-            searchWordsListBox.Dock = DockStyle.Bottom;
-            searchWordsListBox.FormattingEnabled = true;
-            searchWordsListBox.Location = new Point(3, 107);
-            searchWordsListBox.Name = "searchWordsListBox";
-            searchWordsListBox.Size = new Size(244, 224);
-            searchWordsListBox.TabIndex = 6;
-            searchWordsListBox.KeyDown += searchWordsListBox_KeyDown;
+            statusLabel.Text = "0%";
             // 
             // startButton
             // 
-            startButton.Dock = DockStyle.Bottom;
-            startButton.Location = new Point(3, 331);
+            startButton.Dock = DockStyle.Top;
+            startButton.Location = new Point(3, 81);
             startButton.Name = "startButton";
             startButton.Size = new Size(244, 29);
             startButton.TabIndex = 3;
@@ -112,8 +126,8 @@
             // 
             // pauseButton
             // 
-            pauseButton.Dock = DockStyle.Bottom;
-            pauseButton.Location = new Point(3, 360);
+            pauseButton.Dock = DockStyle.Top;
+            pauseButton.Location = new Point(3, 52);
             pauseButton.Name = "pauseButton";
             pauseButton.Size = new Size(244, 29);
             pauseButton.TabIndex = 2;
@@ -123,8 +137,8 @@
             // 
             // cancelButton
             // 
-            cancelButton.Dock = DockStyle.Bottom;
-            cancelButton.Location = new Point(3, 389);
+            cancelButton.Dock = DockStyle.Top;
+            cancelButton.Location = new Point(3, 23);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new Size(244, 29);
             cancelButton.TabIndex = 1;
@@ -134,49 +148,91 @@
             // 
             // statusProgressBar
             // 
-            statusProgressBar.Dock = DockStyle.Bottom;
-            statusProgressBar.Location = new Point(3, 418);
+            statusProgressBar.Location = new Point(553, 15);
             statusProgressBar.Name = "statusProgressBar";
             statusProgressBar.Size = new Size(244, 29);
             statusProgressBar.TabIndex = 0;
             // 
             // reportListBox
             // 
-            reportListBox.Dock = DockStyle.Top;
+            reportListBox.BackColor = Color.Ivory;
+            reportListBox.Dock = DockStyle.Fill;
             reportListBox.FormattingEnabled = true;
-            reportListBox.Location = new Point(0, 0);
+            reportListBox.Location = new Point(3, 23);
             reportListBox.Name = "reportListBox";
-            reportListBox.Size = new Size(550, 404);
+            reportListBox.Size = new Size(538, 429);
             reportListBox.TabIndex = 1;
             // 
             // currentPathLabel
             // 
             currentPathLabel.AutoSize = true;
-            currentPathLabel.Location = new Point(12, 418);
+            currentPathLabel.Dock = DockStyle.Left;
+            currentPathLabel.Location = new Point(3, 23);
             currentPathLabel.Name = "currentPathLabel";
-            currentPathLabel.Size = new Size(96, 20);
+            currentPathLabel.Size = new Size(102, 20);
             currentPathLabel.TabIndex = 2;
-            currentPathLabel.Text = "current path";
+            currentPathLabel.Text = "Current Path:";
+            // 
+            // controlPanelGroupBox
+            // 
+            controlPanelGroupBox.Controls.Add(browseButton);
+            controlPanelGroupBox.Controls.Add(startButton);
+            controlPanelGroupBox.Controls.Add(pauseButton);
+            controlPanelGroupBox.Controls.Add(cancelButton);
+            controlPanelGroupBox.Location = new Point(550, 309);
+            controlPanelGroupBox.Name = "controlPanelGroupBox";
+            controlPanelGroupBox.Size = new Size(250, 147);
+            controlPanelGroupBox.TabIndex = 8;
+            controlPanelGroupBox.TabStop = false;
+            controlPanelGroupBox.Text = "CONTROL PANEL";
+            // 
+            // searchStatusGroupBox
+            // 
+            searchStatusGroupBox.Controls.Add(statusProgressBar);
+            searchStatusGroupBox.Controls.Add(currentPathLabel);
+            searchStatusGroupBox.Controls.Add(statusLabel);
+            searchStatusGroupBox.Dock = DockStyle.Bottom;
+            searchStatusGroupBox.Location = new Point(0, 455);
+            searchStatusGroupBox.Name = "searchStatusGroupBox";
+            searchStatusGroupBox.Size = new Size(800, 50);
+            searchStatusGroupBox.TabIndex = 9;
+            searchStatusGroupBox.TabStop = false;
+            searchStatusGroupBox.Text = "CURRENT SEARCH STATUS";
+            // 
+            // reportGroupBox
+            // 
+            reportGroupBox.Controls.Add(reportListBox);
+            reportGroupBox.Dock = DockStyle.Left;
+            reportGroupBox.Location = new Point(0, 0);
+            reportGroupBox.Name = "reportGroupBox";
+            reportGroupBox.Size = new Size(544, 455);
+            reportGroupBox.TabIndex = 10;
+            reportGroupBox.TabStop = false;
+            reportGroupBox.Text = "SEARCH LOGS";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(currentPathLabel);
-            Controls.Add(reportListBox);
-            Controls.Add(controlsGroupBox);
+            ClientSize = new Size(800, 505);
+            Controls.Add(reportGroupBox);
+            Controls.Add(searchStatusGroupBox);
+            Controls.Add(controlPanelGroupBox);
+            Controls.Add(searchWordsGroupBox);
             Name = "MainForm";
-            Text = "Form1";
-            controlsGroupBox.ResumeLayout(false);
-            controlsGroupBox.PerformLayout();
+            Text = "Forbidden Words Searcher";
+            searchWordsGroupBox.ResumeLayout(false);
+            searchWordsGroupBox.PerformLayout();
+            controlPanelGroupBox.ResumeLayout(false);
+            searchStatusGroupBox.ResumeLayout(false);
+            searchStatusGroupBox.PerformLayout();
+            reportGroupBox.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private GroupBox controlsGroupBox;
+        private GroupBox searchWordsGroupBox;
         private Button startButton;
         private Button pauseButton;
         private Button cancelButton;
@@ -187,5 +243,9 @@
         private Button browseButton;
         private TextBox inputTextBox;
         private Label currentPathLabel;
+        private Label label1;
+        private GroupBox controlPanelGroupBox;
+        private GroupBox searchStatusGroupBox;
+        private GroupBox reportGroupBox;
     }
 }

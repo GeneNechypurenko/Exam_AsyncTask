@@ -145,5 +145,10 @@ namespace Exam
                 FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
             }
         }
+
+        private void inputTextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
