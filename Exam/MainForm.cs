@@ -76,9 +76,21 @@ namespace Exam
 
             foreach (string sourceFilePath in foundFiles)
             {
+                while (isPaused)
+                {
+                    await Task.Delay(50);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (isPaused)
+                    {
+                        continue;
+                    }
+                }
                 cancellationToken.ThrowIfCancellationRequested();
 
                 UpdateUI(sourceFilePath, totalFiles, filesProcessed);
+
+                cancellationToken = new CancellationTokenSource().Token;
 
                 await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords, cancellationToken);
 
@@ -86,6 +98,7 @@ namespace Exam
             }
             return foundFiles;
         }
+
         private void UpdateUI(string sourceFilePath, int totalFiles, int filesProcessed)
         {
             currentPathLabel.Text = $"Current Path: {sourceFilePath}";
@@ -105,7 +118,7 @@ namespace Exam
             reportListBox.Items.Clear();
             reportListBox.Items.AddRange(reportLines.ToArray());
         }
-        private void pauseButton_Click(object sender, EventArgs e)
+        private async void pauseButton_Click(object sender, EventArgs e)
         {
             if (pauseButton.Text == "PAUSE")
             {
@@ -116,6 +129,11 @@ namespace Exam
             {
                 pauseButton.Text = "PAUSE";
                 isPaused = false;
+
+                if (cancellationTokenSource != null)
+                {
+                    cancellationTokenSource.Cancel();
+                }
             }
         }
         private void cancelButton_Click(object sender, EventArgs e)
@@ -144,11 +162,6 @@ namespace Exam
                 await forbiddenWordsSearcher.RemoveSelectedWordsAsync(searchWordsListBox);
                 FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
             }
-        }
-
-        private void inputTextBox_TextChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

@@ -69,7 +69,6 @@
             inputTextBox.Name = "inputTextBox";
             inputTextBox.Size = new Size(244, 27);
             inputTextBox.TabIndex = 8;
-            inputTextBox.TextChanged += inputTextBox_TextChanged;
             inputTextBox.KeyDown += inputTextBox_KeyDown;
             // 
             // label1
