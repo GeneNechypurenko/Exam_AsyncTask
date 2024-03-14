@@ -11,7 +11,6 @@ namespace Exam
         public MainForm()
         {
             InitializeComponent();
-
             appConfig = new AppConfig();
             appConfig.DataFolder = new DataFolderPaths();
             appConfig.DataFolder.BuildPathsRelativeToApplication();
@@ -19,6 +18,7 @@ namespace Exam
             forbiddenWordsSearcher = new ForbiddenWordsSearcher(appConfig);
             FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
             EnableControls();
+            UpdateReportListBox();
         }
         private void EnableControls()
         {
@@ -48,27 +48,9 @@ namespace Exam
 
             try
             {
-                List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder, cancellationTokenSource.Token);
+                List<string> foundFiles = await SearchFilesAsync(cancellationTokenSource.Token);
 
-                int totalFiles = foundFiles.Count;
-                int filesProcessed = 0;
-
-                foreach (string sourceFilePath in foundFiles)
-                {
-                    if (await PauseButtonPressed())
-
-                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-
-                    currentPathLabel.Text = $"Current Path: {sourceFilePath}";
-
-                    int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
-                    statusProgressBar.Value = progressPercentage;
-                    statusLabel.Text = $"{progressPercentage}%";
-
-                    await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords, cancellationTokenSource.Token);
-
-                    filesProcessed++;
-                }
+                UpdateReportAndUI(foundFiles);
 
                 statusProgressBar.Value = 100;
                 statusLabel.Text = "100%";
@@ -85,13 +67,43 @@ namespace Exam
                 EnableControls();
             }
         }
-        private async Task<bool> PauseButtonPressed()
+        private async Task<List<string>> SearchFilesAsync(CancellationToken cancellationToken)
         {
-            while (isPaused)
+            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder, cancellationToken);
+
+            int totalFiles = foundFiles.Count;
+            int filesProcessed = 0;
+
+            foreach (string sourceFilePath in foundFiles)
             {
-                await Task.Delay(50);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                UpdateUI(sourceFilePath, totalFiles, filesProcessed);
+
+                await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords, cancellationToken);
+
+                filesProcessed++;
             }
-            return isPaused;
+            return foundFiles;
+        }
+        private void UpdateUI(string sourceFilePath, int totalFiles, int filesProcessed)
+        {
+            currentPathLabel.Text = $"Current Path: {sourceFilePath}";
+
+            int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
+            statusProgressBar.Value = progressPercentage;
+            statusLabel.Text = $"{progressPercentage}%";
+        }
+        private void UpdateReportAndUI(List<string> foundFiles)
+        {
+            ReportGenerator.GenerateReport(foundFiles, forbiddenWordsSearcher.ForbiddenWords, appConfig.DataFolder.ReportLogFilePath);
+            UpdateReportListBox();
+        }
+        private void UpdateReportListBox()
+        {
+            List<string> reportLines = ReportGenerator.ReadReportLogFile(appConfig.DataFolder.ReportLogFilePath);
+            reportListBox.Items.Clear();
+            reportListBox.Items.AddRange(reportLines.ToArray());
         }
         private void pauseButton_Click(object sender, EventArgs e)
         {

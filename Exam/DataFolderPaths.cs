@@ -8,6 +8,7 @@ public class DataFolderPaths
     public string SearchLogs { get; set; }
     public string SearchWords { get; set; }
     public string ForbiddenWordsFilePath { get; set; }
+    public string ReportLogFilePath { get; set; }
     public void BuildPathsRelativeToApplication()
     {
         IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
@@ -23,6 +24,7 @@ public class DataFolderPaths
         SearchLogs = Path.Combine(baseDirectory, configuration["appSettings:searchLogsDirectory"]);
         SearchWords = Path.Combine(baseDirectory, configuration["appSettings:searchWordsDirectory"]);
         ForbiddenWordsFilePath = Path.Combine(SearchWords, "ForbiddenWords.txt");
+        ReportLogFilePath = Path.Combine(SearchLogs, "ReportLog.txt");
     }
     public void DataFoldersEnsureCreated()
     {
@@ -41,6 +43,14 @@ public class DataFolderPaths
             File.Create(ForbiddenWordsFilePath).Close();
         }
         return ForbiddenWordsFilePath;
+    }
+    public string GetReportLogFilehEnsureCreated()
+    {
+        if (!File.Exists(ReportLogFilePath))
+        {
+            File.Create(ReportLogFilePath).Close();
+        }
+        return ReportLogFilePath;
     }
     public async void OpenDataFolder()
     {

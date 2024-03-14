@@ -2,16 +2,13 @@
 {
     public class ForbiddenWordsSearcher
     {
+        public List<string> ForbiddenWords { get; private set; }
         private readonly AppConfig appConfig;
-
         public ForbiddenWordsSearcher(AppConfig config)
         {
             appConfig = config;
             LoadForbiddenWords();
         }
-
-        public List<string> ForbiddenWords { get; private set; }
-
         private void LoadForbiddenWords()
         {
             ForbiddenWords = new List<string>();
@@ -21,14 +18,12 @@
                 ForbiddenWords.AddRange(File.ReadAllLines(appConfig.DataFolder.ForbiddenWordsFilePath));
             }
         }
-
         public async Task AddForbiddenWordAsync(string enteredWord)
         {
             string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
             await File.AppendAllTextAsync(filePath, enteredWord + "\n");
             LoadForbiddenWords();
         }
-
         public async Task RemoveSelectedWordsAsync(ListBox listBox)
         {
             string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
