@@ -31,13 +31,14 @@
             controlsGroupBox = new GroupBox();
             inputTextBox = new TextBox();
             browseButton = new Button();
-            infoLabel = new Label();
+            statusLabel = new Label();
             searchWordsListBox = new ListBox();
             startButton = new Button();
             pauseButton = new Button();
             cancelButton = new Button();
             statusProgressBar = new ProgressBar();
             reportListBox = new ListBox();
+            currentPathLabel = new Label();
             controlsGroupBox.SuspendLayout();
             SuspendLayout();
             // 
@@ -45,7 +46,7 @@
             // 
             controlsGroupBox.Controls.Add(inputTextBox);
             controlsGroupBox.Controls.Add(browseButton);
-            controlsGroupBox.Controls.Add(infoLabel);
+            controlsGroupBox.Controls.Add(statusLabel);
             controlsGroupBox.Controls.Add(searchWordsListBox);
             controlsGroupBox.Controls.Add(startButton);
             controlsGroupBox.Controls.Add(pauseButton);
@@ -78,15 +79,15 @@
             browseButton.UseVisualStyleBackColor = true;
             browseButton.Click += browseButton_Click;
             // 
-            // infoLabel
+            // statusLabel
             // 
-            infoLabel.AutoSize = true;
-            infoLabel.Dock = DockStyle.Top;
-            infoLabel.Location = new Point(3, 23);
-            infoLabel.Name = "infoLabel";
-            infoLabel.Size = new Size(107, 20);
-            infoLabel.TabIndex = 5;
-            infoLabel.Text = "current status";
+            statusLabel.AutoSize = true;
+            statusLabel.Dock = DockStyle.Top;
+            statusLabel.Location = new Point(3, 23);
+            statusLabel.Name = "statusLabel";
+            statusLabel.Size = new Size(107, 20);
+            statusLabel.TabIndex = 5;
+            statusLabel.Text = "current status";
             // 
             // searchWordsListBox
             // 
@@ -141,18 +142,28 @@
             // 
             // reportListBox
             // 
-            reportListBox.Dock = DockStyle.Fill;
+            reportListBox.Dock = DockStyle.Top;
             reportListBox.FormattingEnabled = true;
             reportListBox.Location = new Point(0, 0);
             reportListBox.Name = "reportListBox";
-            reportListBox.Size = new Size(550, 450);
+            reportListBox.Size = new Size(550, 404);
             reportListBox.TabIndex = 1;
+            // 
+            // currentPathLabel
+            // 
+            currentPathLabel.AutoSize = true;
+            currentPathLabel.Location = new Point(12, 418);
+            currentPathLabel.Name = "currentPathLabel";
+            currentPathLabel.Size = new Size(96, 20);
+            currentPathLabel.TabIndex = 2;
+            currentPathLabel.Text = "current path";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(currentPathLabel);
             Controls.Add(reportListBox);
             Controls.Add(controlsGroupBox);
             Name = "MainForm";
@@ -160,6 +171,7 @@
             controlsGroupBox.ResumeLayout(false);
             controlsGroupBox.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -170,9 +182,10 @@
         private Button cancelButton;
         private ProgressBar statusProgressBar;
         private ListBox searchWordsListBox;
-        private Label infoLabel;
+        private Label statusLabel;
         private ListBox reportListBox;
         private Button browseButton;
         private TextBox inputTextBox;
+        private Label currentPathLabel;
     }
 }

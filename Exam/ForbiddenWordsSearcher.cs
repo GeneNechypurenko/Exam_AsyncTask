@@ -3,15 +3,32 @@
     public class ForbiddenWordsSearcher
     {
         private readonly AppConfig appConfig;
+
         public ForbiddenWordsSearcher(AppConfig config)
         {
             appConfig = config;
+            LoadForbiddenWords();
         }
+
+        public List<string> ForbiddenWords { get; private set; }
+
+        private void LoadForbiddenWords()
+        {
+            ForbiddenWords = new List<string>();
+
+            if (File.Exists(appConfig.DataFolder.ForbiddenWordsFilePath))
+            {
+                ForbiddenWords.AddRange(File.ReadAllLines(appConfig.DataFolder.ForbiddenWordsFilePath));
+            }
+        }
+
         public async Task AddForbiddenWordAsync(string enteredWord)
         {
             string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
             await File.AppendAllTextAsync(filePath, enteredWord + "\n");
+            LoadForbiddenWords(); // Обновить список запрещенных слов после добавления нового слова
         }
+
         public async Task RemoveSelectedWordsAsync(ListBox listBox)
         {
             string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
@@ -31,20 +48,33 @@
             }
 
             await File.WriteAllLinesAsync(filePath, updatedLines);
+            LoadForbiddenWords(); // Обновить список запрещенных слов после удаления слов
         }
-        public async Task CopyFoundFilesAsync()
+        public async Task CopyAndRenameFoundFilesAsync(List<string> forbiddenWords)
         {
             List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder);
-
-            string copiedFilesDirectory = appConfig.DataFolder.CopiedFiles;
-
             foreach (string sourceFilePath in foundFiles)
             {
-                string fileName = Path.GetFileName(sourceFilePath);
-                string destinationFilePath = Path.Combine(copiedFilesDirectory, fileName);
+                string originalFileName = Path.GetFileName(sourceFilePath);
 
-                await Task.Run(() => File.Copy(sourceFilePath, destinationFilePath, true));
+                string originalDestinationFilePath = Path.Combine(appConfig.DataFolder.CopiedFiles, originalFileName);
+
+                Thread.Sleep(200);
+                await Task.Run(() => File.Copy(sourceFilePath, originalDestinationFilePath, true));
+
+                string renamedFileName = originalFileName;
+                foreach (string word in forbiddenWords)
+                {
+                    if (renamedFileName.Contains(word))
+                    {
+                        renamedFileName = renamedFileName.Replace(word, "@@@");
+                    }
+                }
+                string renamedDestinationFilePath = Path.Combine(appConfig.DataFolder.CopiedFiles, renamedFileName);
+
+                await Task.Run(() => File.Copy(sourceFilePath, renamedDestinationFilePath, true));
             }
         }
+
     }
 }

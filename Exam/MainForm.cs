@@ -25,7 +25,30 @@ namespace Exam
 
         private async void startButton_Click(object sender, EventArgs e)
         {
-            await forbiddenWordsSearcher.CopyFoundFilesAsync();
+            statusProgressBar.Value = 0;
+            statusLabel.Text = "0%";
+            currentPathLabel.Text = "Searching...";
+
+            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder);
+
+            int totalFiles = foundFiles.Count;
+            int filesProcessed = 0;
+
+            foreach (string sourceFilePath in foundFiles)
+            {
+                currentPathLabel.Text = $"Current Path: {sourceFilePath}";
+
+                int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
+                statusProgressBar.Value = progressPercentage;
+                statusLabel.Text = $"{progressPercentage}%";
+
+                await forbiddenWordsSearcher.CopyAndRenameFoundFilesAsync(forbiddenWordsSearcher.ForbiddenWords);
+
+                filesProcessed++;
+            }
+            statusProgressBar.Value = 100;
+            statusLabel.Text = "100%";
+            currentPathLabel.Text = "Search Completed!";
         }
 
         private async void pauseButton_Click(object sender, EventArgs e)
@@ -57,7 +80,6 @@ namespace Exam
                 inputTextBox.Clear();
             }
         }
-
         private async void searchWordsListBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
