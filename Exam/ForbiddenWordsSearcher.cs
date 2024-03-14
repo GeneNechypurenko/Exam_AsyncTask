@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Windows.Forms;
-
-namespace ForbiddenWordsSearchApp
+﻿namespace ForbiddenWordsSearchApp
 {
     public class ForbiddenWordsSearcher
     {
@@ -11,45 +7,43 @@ namespace ForbiddenWordsSearchApp
         {
             appConfig = config;
         }
-
-        public void AddForbiddenWord(string enteredWord)
+        public async Task AddForbiddenWordAsync(string enteredWord)
         {
-            try
-            {
-                string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
-                File.AppendAllText(filePath, enteredWord + "\n");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при записи в файл: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
+            await File.AppendAllTextAsync(filePath, enteredWord + "\n");
         }
-
-        public void RemoveSelectedWords(ListBox listBox)
+        public async Task RemoveSelectedWordsAsync(ListBox listBox)
         {
-            try
+            string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
+
+            List<string> selectedWords = new List<string>();
+            foreach (var item in listBox.SelectedItems)
             {
-                string filePath = appConfig.DataFolder.GetSearchWordsFileEnsureCreated();
-
-                List<string> selectedWords = new List<string>();
-                foreach (var item in listBox.SelectedItems)
-                {
-                    selectedWords.Add(item.ToString());
-                }
-
-                string[] allLines = File.ReadAllLines(filePath);
-                List<string> updatedLines = new List<string>(allLines);
-
-                foreach (var word in selectedWords)
-                {
-                    updatedLines.Remove(word);
-                }
-
-                File.WriteAllLines(filePath, updatedLines);
+                selectedWords.Add(item.ToString());
             }
-            catch (Exception ex)
+
+            string[] allLines = await File.ReadAllLinesAsync(filePath);
+            List<string> updatedLines = new List<string>(allLines);
+
+            foreach (var word in selectedWords)
             {
-                MessageBox.Show($"Ошибка при удалении из файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                updatedLines.Remove(word);
+            }
+
+            await File.WriteAllLinesAsync(filePath, updatedLines);
+        }
+        public async Task CopyFoundFilesAsync()
+        {
+            List<string> foundFiles = await FileSearcher.SearchFilesByForbiddenWords(appConfig.DataFolder);
+
+            string copiedFilesDirectory = appConfig.DataFolder.CopiedFiles;
+
+            foreach (string sourceFilePath in foundFiles)
+            {
+                string fileName = Path.GetFileName(sourceFilePath);
+                string destinationFilePath = Path.Combine(copiedFilesDirectory, fileName);
+
+                await Task.Run(() => File.Copy(sourceFilePath, destinationFilePath, true));
             }
         }
     }

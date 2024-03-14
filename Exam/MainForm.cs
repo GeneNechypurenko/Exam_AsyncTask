@@ -1,17 +1,10 @@
 using ForbiddenWordsSearchApp;
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Exam
 {
     public partial class MainForm : Form
     {
         private AppConfig appConfig;
-        private FormUpdater formUpdater;
         private ForbiddenWordsSearcher forbiddenWordsSearcher;
 
         public MainForm()
@@ -21,13 +14,10 @@ namespace Exam
             appConfig = new AppConfig();
             appConfig.DataFolder = new DataFolderPaths();
             appConfig.DataFolder.BuildPathsRelativeToApplication();
-
-            formUpdater = new FormUpdater(appConfig);
-            formUpdater.DisplayForbiddenWords(searchWordsListBox);
-
+            appConfig.DataFolder.DataFoldersEnsureCreated();
             forbiddenWordsSearcher = new ForbiddenWordsSearcher(appConfig);
+            FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
         }
-
         private async void browseButton_Click(object sender, EventArgs e)
         {
             await Task.Run(() => { appConfig.DataFolder.OpenDataFolder(); });
@@ -35,7 +25,7 @@ namespace Exam
 
         private async void startButton_Click(object sender, EventArgs e)
         {
-            //await Task.Run(() => { forbiddenWordsSearcher.SearchAndCopyFiles(infoLabel, statusProgressBar); });
+            await forbiddenWordsSearcher.CopyFoundFilesAsync();
         }
 
         private async void pauseButton_Click(object sender, EventArgs e)
@@ -57,28 +47,23 @@ namespace Exam
         {
             if (e.KeyCode == Keys.Enter)
             {
-                await Task.Run(() =>
-                {
-                    string enteredWord = inputTextBox.Text.Trim();
+                string enteredWord = inputTextBox.Text.Trim();
 
-                    if (!string.IsNullOrEmpty(enteredWord))
-                    {
-                        forbiddenWordsSearcher.AddForbiddenWord(enteredWord);
-                        formUpdater.DisplayForbiddenWords(searchWordsListBox);
-                    }
-                });
+                if (!string.IsNullOrEmpty(enteredWord))
+                {
+                    await forbiddenWordsSearcher.AddForbiddenWordAsync(enteredWord);
+                    FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
+                }
                 inputTextBox.Clear();
             }
         }
+
         private async void searchWordsListBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
-                await Task.Run(() =>
-                {
-                    forbiddenWordsSearcher.RemoveSelectedWords(searchWordsListBox);
-                    formUpdater.DisplayForbiddenWords(searchWordsListBox);
-                });
+                await forbiddenWordsSearcher.RemoveSelectedWordsAsync(searchWordsListBox);
+                FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
             }
         }
     }

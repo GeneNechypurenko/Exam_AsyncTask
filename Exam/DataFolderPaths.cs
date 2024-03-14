@@ -24,6 +24,16 @@ public class DataFolderPaths
         SearchWords = Path.Combine(baseDirectory, configuration["appSettings:searchWordsDirectory"]);
         ForbiddenWordsFilePath = Path.Combine(SearchWords, "ForbiddenWords.txt");
     }
+    public void DataFoldersEnsureCreated()
+    {
+        if (!Directory.Exists(Data))
+        {
+            Directory.CreateDirectory(Data);
+            Directory.CreateDirectory(CopiedFiles);
+            Directory.CreateDirectory(SearchLogs);
+            Directory.CreateDirectory(SearchWords);
+        }
+    }
     public string GetSearchWordsFileEnsureCreated()
     {
         if (!File.Exists(ForbiddenWordsFilePath))
@@ -32,9 +42,8 @@ public class DataFolderPaths
         }
         return ForbiddenWordsFilePath;
     }
-
-    public void OpenDataFolder()
+    public async void OpenDataFolder()
     {
-        Process.Start("explorer.exe", Data);
+        await Task.Run(() => Process.Start("explorer.exe", Data));
     }
 }
