@@ -55,7 +55,6 @@
                 string originalFileName = Path.GetFileName(sourceFilePath);
                 string originalDestinationFilePath = Path.Combine(appConfig.DataFolder.CopiedFiles, originalFileName);
 
-                //Thread.Sleep(200);
                 await Task.Run(() => File.Copy(sourceFilePath, originalDestinationFilePath, true), cancellationToken);
 
                 string renamedFileName = originalFileName;

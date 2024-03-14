@@ -24,6 +24,6 @@
                 foundFiles.AddRange(files);
             }
         }
-        return foundFiles.Distinct().ToList();
+        return foundFiles.ToList();
     }
 }
