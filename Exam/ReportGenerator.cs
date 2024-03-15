@@ -4,53 +4,61 @@
     {
         using (StreamWriter writer = new StreamWriter(reportLogFilePath, true))
         {
-            writer.WriteLine("Report generated at: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            writer.WriteLine("===============================================");
-            writer.WriteLine("Found Files:");
-
-            foreach (string file in foundFiles)
-            {
-                writer.WriteLine($"- File: {file}");
-            }
-
-            writer.WriteLine("===============================================");
-            writer.WriteLine("Top 10 Forbidden Words:");
-
-            var wordCounts = new Dictionary<string, int>();
-
-            foreach (var word in forbiddenWords)
-            {
-                if (wordCounts.ContainsKey(word))
-                {
-                    wordCounts[word]++;
-                }
-                else
-                {
-                    wordCounts[word] = 1;
-                }
-            }
-
-            var top10Words = wordCounts.OrderByDescending(pair => pair.Value).Take(10);
-
-            foreach (var pair in top10Words)
-            {
-                writer.WriteLine($"- {pair.Key}: {pair.Value} occurrences");
-            }
-            writer.WriteLine();
+            WriteReportHeader(writer);
+            WriteFoundFiles(writer, foundFiles);
+            WriteTopForbiddenWords(writer, foundFiles, forbiddenWords);
         }
     }
-    private static int CountWordOccurrencesInFile(string filePath, string word)
+    private static void WriteReportHeader(StreamWriter writer)
     {
-        int count = 0;
-
-        string text = File.ReadAllText(filePath);
-        int index = text.IndexOf(word, StringComparison.OrdinalIgnoreCase);
-        while (index != -1)
+        writer.WriteLine("Report generated at: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+        writer.WriteLine("===============================================");
+    }
+    private static void WriteFoundFiles(StreamWriter writer, List<string> foundFiles)
+    {
+        writer.WriteLine("Found Files:");
+        foreach (string file in foundFiles)
         {
-            count++;
-            index = text.IndexOf(word, index + word.Length, StringComparison.OrdinalIgnoreCase);
+            writer.WriteLine($"- File: {file}");
         }
-        return count;
+        writer.WriteLine("===============================================");
+    }
+    private static void WriteTopForbiddenWords(StreamWriter writer, List<string> foundFiles, List<string> forbiddenWords)
+    {
+        writer.WriteLine("Top 10 Forbidden Words:");
+
+        var wordCounts = CountForbiddenWords(foundFiles, forbiddenWords);
+        var top10Words = GetTop10Words(wordCounts);
+
+        foreach (var pair in top10Words)
+        {
+            writer.WriteLine($"- {pair.Key}: {pair.Value} occurrences");
+        }
+        writer.WriteLine();
+    }
+    private static Dictionary<string, int> CountForbiddenWords(List<string> foundFiles, List<string> forbiddenWords)
+    {
+        var wordCounts = new Dictionary<string, int>();
+
+        foreach (var file in foundFiles)
+        {
+            foreach (var word in forbiddenWords)
+            {
+                if (file.Contains(word))
+                {
+                    if (!wordCounts.ContainsKey(word))
+                    {
+                        wordCounts[word] = 0;
+                    }
+                    wordCounts[word]++;
+                }
+            }
+        }
+        return wordCounts;
+    }
+    private static IEnumerable<KeyValuePair<string, int>> GetTop10Words(Dictionary<string, int> wordCounts)
+    {
+        return wordCounts.OrderByDescending(pair => pair.Value).Take(10);
     }
     public static List<string> ReadReportLogFile(string reportLogFilePath)
     {
@@ -60,7 +68,6 @@
         {
             lines = File.ReadAllLines(reportLogFilePath).ToList();
         }
-
         return lines;
     }
 }
