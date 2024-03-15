@@ -8,17 +8,26 @@ namespace Exam
         private ForbiddenWordsSearcher forbiddenWordsSearcher;
         private CancellationTokenSource cancellationTokenSource;
         private bool isPaused = false;
+
         public MainForm()
         {
             InitializeComponent();
+            InitializeAppConfig();
+            InitializeForbiddenWordsSearcher();
+            EnableControls();
+            FormUpdater.UpdateReportListBox(appConfig, reportListBox);
+        }
+        private void InitializeAppConfig()
+        {
             appConfig = new AppConfig();
             appConfig.DataFolder = new DataFolderPaths();
             appConfig.DataFolder.BuildPathsRelativeToApplication();
             appConfig.DataFolder.DataFoldersEnsureCreated();
-            forbiddenWordsSearcher = new ForbiddenWordsSearcher(appConfig);
             FormUpdater.DisplayForbiddenWords(appConfig.DataFolder, searchWordsListBox);
-            EnableControls();
-            UpdateReportListBox();
+        }
+        private void InitializeForbiddenWordsSearcher()
+        {
+            forbiddenWordsSearcher = new ForbiddenWordsSearcher(appConfig);
         }
         private void EnableControls()
         {
@@ -50,7 +59,7 @@ namespace Exam
             {
                 List<string> foundFiles = await SearchFilesAsync(cancellationTokenSource.Token);
 
-                UpdateReportAndUI(foundFiles);
+                FormUpdater.UpdateReportAndUI(foundFiles, forbiddenWordsSearcher, appConfig, reportListBox);
 
                 statusProgressBar.Value = 100;
                 statusLabel.Text = "100%";
@@ -88,7 +97,7 @@ namespace Exam
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                UpdateUI(sourceFilePath, totalFiles, filesProcessed);
+                FormUpdater.UpdateUI(sourceFilePath, totalFiles, filesProcessed, currentPathLabel, statusProgressBar, statusLabel);
 
                 cancellationToken = new CancellationTokenSource().Token;
 
@@ -97,26 +106,6 @@ namespace Exam
                 filesProcessed++;
             }
             return foundFiles;
-        }
-
-        private void UpdateUI(string sourceFilePath, int totalFiles, int filesProcessed)
-        {
-            currentPathLabel.Text = $"Current Path: {sourceFilePath}";
-
-            int progressPercentage = (int)(((double)filesProcessed / totalFiles) * 100);
-            statusProgressBar.Value = progressPercentage;
-            statusLabel.Text = $"{progressPercentage}%";
-        }
-        private void UpdateReportAndUI(List<string> foundFiles)
-        {
-            ReportGenerator.GenerateReport(foundFiles, forbiddenWordsSearcher.ForbiddenWords, appConfig.DataFolder.ReportLogFilePath);
-            UpdateReportListBox();
-        }
-        private void UpdateReportListBox()
-        {
-            List<string> reportLines = ReportGenerator.ReadReportLogFile(appConfig.DataFolder.ReportLogFilePath);
-            reportListBox.Items.Clear();
-            reportListBox.Items.AddRange(reportLines.ToArray());
         }
         private async void pauseButton_Click(object sender, EventArgs e)
         {
